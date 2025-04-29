@@ -55,7 +55,7 @@ def prepare_data(data_name, args):
         examples = load_data("math500", args.data_dir)
         examples = [example for example in examples if example["level"]==level]
     else:
-        examples = load_data(data_name, args.split, args.data_dir)
+        examples = load_data(data_name, args.data_dir)
 
     # sample `num_test_sample` from dataset for debug purpose
     if args.num_test_sample > 0:
