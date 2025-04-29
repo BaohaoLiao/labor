@@ -183,7 +183,7 @@ def main(llm, data_name, args):
             }
         )
 
-        print(f"#samples: {len(samples)}, acc: {np.mean(avg_acc):.4f}, time: {(end_time - start_time)/60} mins")
+        print(f"#samples: {len(samples)}, acc: {np.mean(avg_acc):.4f}, time: {(end_time - start_time)/60:.4f} mins")
 
         print(f"Saving model outputs for {data_name} to {out_file}")
         json.dump(results, open(out_file, "w",), indent=4)
