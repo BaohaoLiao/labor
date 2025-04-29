@@ -99,7 +99,7 @@ def main(llm, data_name, args):
 
     samples = []
     for i, example in tqdm(enumerate(examples), total=len(examples)):
-        idx = example["idx"]
+        idx = int(example["idx"])
 
         # parse question and answer
         example["question"] = parse_question(example, data_name)
@@ -175,8 +175,9 @@ def main(llm, data_name, args):
 
         results.append(
             {
+                "idx": sample["idx"],
                 "question": sample["question"],
-                "gt": gt,
+                "gt": str(gt),
                 "model_output": [o.text for o in output.outputs],
                 "score": scores,
                 "preds": preds
