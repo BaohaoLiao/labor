@@ -168,6 +168,7 @@ def main(llm, data_name, args):
         preds = []
         scores = []
         for o in output.outputs:
+            # Avoid the bug in math_verify for multiple boxeds
             if "</think>" in o.text:
                 model_output = o.text.split("<\think>")[-1]
             else:
