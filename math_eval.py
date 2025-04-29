@@ -105,7 +105,6 @@ def main(llm, data_name, args):
         example["question"] = parse_question(example, data_name)
         if example["question"] == "":
             continue
-        gt = parse_ground_truth(example, data_name)
         full_prompt = construct_prompt(example, args)
 
         if i == 0:
@@ -114,7 +113,7 @@ def main(llm, data_name, args):
         sample = {
             "idx": idx,
             "question": example["question"],
-            "gt": gt,
+            "gt": sample["answer"],
             "prompt": full_prompt,
         }
 
@@ -164,11 +163,16 @@ def main(llm, data_name, args):
     results = []
     avg_acc = []
     for sample, output in zip(samples, outputs):
-        gt = sample["gt"]
+        gt = parse_ground_truth(sample, data_name)
+
         preds = []
         scores = []
         for o in output.outputs:
-            pred, score = extract_and_verify_pred(o.text, gt, data_name)
+            if "</think>" in o.text:
+                model_output = o.text.split("<\think>")[-1]
+            else:
+                model_output = o.text
+            pred, score = extract_and_verify_pred(model_output, gt, data_name)
             preds.append(pred)
             scores.append(score)
             avg_acc.append(np.mean(scores))
@@ -177,7 +181,7 @@ def main(llm, data_name, args):
             {
                 "idx": sample["idx"],
                 "question": sample["question"],
-                "gt": str(gt),
+                "gt": str(sample["answer"]),
                 "preds": preds,
                 "score": scores,
                 "model_output": [o.text for o in output.outputs],
