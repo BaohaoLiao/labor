@@ -178,9 +178,9 @@ def main(llm, data_name, args):
                 "idx": sample["idx"],
                 "question": sample["question"],
                 "gt": str(gt),
-                "model_output": [o.text for o in output.outputs],
+                "preds": preds,
                 "score": scores,
-                "preds": preds
+                "model_output": [o.text for o in output.outputs],
             }
         )
 
