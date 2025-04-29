@@ -113,7 +113,7 @@ def main(llm, data_name, args):
         sample = {
             "idx": idx,
             "question": example["question"],
-            "gt": sample["answer"],
+            "gt": example["answer"],
             "prompt": full_prompt,
         }
 
