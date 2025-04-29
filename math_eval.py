@@ -184,19 +184,19 @@ def main(llm, data_name, args):
             }
         )
 
-        time_use = (end_time - start_time) / 60
-        result_json = {
-            "num_samples": len(samples),
-            "pass@1": np.mean(avg_acc),
-            "time_use_in_min": time_use,
-        }
-        print(result_json)
+    time_use = (end_time - start_time) / 60
+    result_json = {
+        "num_samples": len(samples),
+        "pass@1": np.mean(avg_acc),
+        "time_use_in_min": time_use,
+    }
+    print(result_json)
 
-        print(f"Saving model outputs for {data_name} to {out_file}")
-        json.dump(results, open(out_file, "w",), indent=4)
+    print(f"Saving model outputs for {data_name} to {out_file}")
+    json.dump(results, open(out_file, "w",), indent=4)
 
-        with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
-            json.dump(result_json, f, indent=4)
+    with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
+        json.dump(result_json, f, indent=4)
 
 
 if __name__ == "__main__":
