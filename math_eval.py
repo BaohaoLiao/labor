@@ -110,7 +110,7 @@ def main(llm, data_name, args):
         gt = parse_ground_truth(example, data_name)
         full_prompt = construct_prompt(example, args)
 
-        if i == args.start:
+        if i == 0:
             print(full_prompt)
 
         sample = {
@@ -160,6 +160,7 @@ def main(llm, data_name, args):
     )
     outputs = sorted(outputs, key=lambda x: int(x.request_id))
     assert len(outputs) == len(prompts)
+    end_time = time.time()
 
     # Extract pred and eval
     results = []
@@ -184,7 +185,7 @@ def main(llm, data_name, args):
             }
         )
 
-        print(f"#samples: {len(samples)}, acc: {np.mean(avg_acc):.4f}")
+        print(f"#samples: {len(samples)}, acc: {np.mean(avg_acc):.4f}, time: {(end_time - start_time)/60} mins")
 
         print(f"Saving model outputs for {data_name} to {out_file}")
         json.dump(results, open(out_file, "w",), indent=4)
