@@ -45,7 +45,7 @@ def save_jsonl(samples, save_path):
     print("Saved to", save_path)
 
 
-def load_data(data_name, data_dir="./data"):
+def load_data(data_name, data_dir="./datas"):
     data_file = f"{data_dir}/{data_name}/test.jsonl"
     assert os.path.exists(data_file)
     examples = list(load_jsonl(data_file))
