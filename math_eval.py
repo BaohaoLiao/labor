@@ -66,7 +66,7 @@ def prepare_data(data_name, args):
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
-    out_file = f"{output_dir}/{data_name}/{out_file_prefix}_num{args.num_test_sample}_n{args.n_sampling}.jsonl"
+    out_file = f"{output_dir}/{data_name}/{out_file_prefix}_num{args.num_test_sample}_n{args.n_sampling}.json"
     os.makedirs(f"{output_dir}/{data_name}", exist_ok=True)
     return examples, out_file
 
@@ -184,10 +184,19 @@ def main(llm, data_name, args):
             }
         )
 
-        print(f"#samples: {len(samples)}, acc: {np.mean(avg_acc):.4f}, time: {(end_time - start_time)/60:.4f} mins")
+        time_use = (end_time - start_time) / 60
+        result_json = {
+            "num_samples": len(samples),
+            "pass@1": np.mean(avg_acc),
+            "time_use_in_min": time_use,
+        }
+        print(result_json)
 
         print(f"Saving model outputs for {data_name} to {out_file}")
         json.dump(results, open(out_file, "w",), indent=4)
+
+        with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
+            json.dump(result_json, f, indent=4)
 
 
 if __name__ == "__main__":
