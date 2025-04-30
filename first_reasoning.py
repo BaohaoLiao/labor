@@ -112,7 +112,7 @@ def main(args, llm, tokenizer):
             "question": example["question"],
             "gt": example["answer"],
             "prompt": full_prompt,
-            "preds": baseline_result["pred"],
+            "pred": baseline_result["preds"],
             "score": baseline_result["score"],
             "model_output": baseline_result["model_output"],
         }
