@@ -122,6 +122,7 @@ def main(args, llm, tokenizer):
             "idx": example["idx"],
             "question": example["question"],
             "gt": example["answer"],
+            "answer": example["answer"],
             "prompt": full_prompt,
             "pred": preds,
             "score": scores,
