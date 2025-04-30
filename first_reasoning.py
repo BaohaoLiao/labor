@@ -138,6 +138,8 @@ def main(args, llm, tokenizer):
             first_reasoning = model_output.split("Alternatively")[0].rstrip()
             prompt_and_first_reasonings.append(sample["prompt"] + first_reasoning + "\n\n</think>")
 
+    print(f"Num samplings for different questions: {n_samplings}")
+
     # start inference
     start_time = time.time()
     outputs = llm.generate(
