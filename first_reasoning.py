@@ -124,7 +124,7 @@ def main(args, llm, tokenizer):
             "gt": example["answer"],
             "prompt": full_prompt,
             "pred": preds,
-            "score": score,
+            "score": scores,
             "model_output": model_outputs,
         }
         samples.append(sample)
