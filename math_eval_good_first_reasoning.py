@@ -135,7 +135,7 @@ def select_better_first_reasoning(rm, rm_tokenizer, question, reasonings, reward
         messages = [
             {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."},
             {"role": "user", "content": question},
-            {"role": "assistant", "content": "<extra_0>".join(reasoning.strip()) + "<extra_0>"},
+            {"role": "assistant", "content": "<extra_0>".join(reasoning.strip().split("\n\n")) + "<extra_0>"},
         ]
         conversation_str = rm_tokenizer.apply_chat_template(
             messages, 
