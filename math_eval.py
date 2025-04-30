@@ -170,7 +170,7 @@ def main(llm, data_name, args):
         for o in output.outputs:
             # Avoid the bug in math_verify for multiple boxeds
             if "</think>" in o.text:
-                model_output = o.text.split("<\think>")[-1]
+                model_output = o.text.split("</think>")[-1]
             else:
                 model_output = o.text
             pred, score = extract_and_verify_pred(model_output, gt, data_name)
