@@ -92,7 +92,7 @@ def setup(args):
 
 
 def main(args, llm, tokenizer):
-    examples, baseline_results, out_file = prepare_data(args, args.data_name)
+    examples, baseline_results, out_file = prepare_data(args)
     print("=" * 50)
     print("data:", args.data_name, " , #samples:", len(examples))
 
