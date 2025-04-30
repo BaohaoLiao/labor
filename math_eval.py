@@ -176,7 +176,7 @@ def main(llm, data_name, args):
             pred, score = extract_and_verify_pred(model_output, gt, data_name)
             preds.append(pred)
             scores.append(score)
-            avg_acc.append(np.mean(scores))
+        avg_acc.append(np.mean(scores))
 
         results.append(
             {
