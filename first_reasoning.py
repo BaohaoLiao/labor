@@ -110,10 +110,10 @@ def main(args, llm, tokenizer):
         preds = []
         scores = []
         model_outputs = []
-        for i, model_output in baseline_result["model_output"]:
+        for i, model_output in enumerate(baseline_result["model_output"]):
             if "Alternatively" in model_output:
-                preds.append(baseline_result["preds"])
-                scores.append(baseline_result["score"])
+                preds.append(baseline_result["preds"][i])
+                scores.append(baseline_result["score"][i])
                 model_outputs.append(model_output)
 
         assert len(preds) > 0
