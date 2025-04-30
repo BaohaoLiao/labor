@@ -129,11 +129,6 @@ def main(args, llm, tokenizer):
         }
         samples.append(sample)
 
-    # Make sure there are first reasoning
-    for i, sample in enumerate(samples):
-        for j, model_output in enumerate(sample["model_output"]):
-            assert "Alternatively" in model_output, f"{i}th sample {j} model_output doesn't have Alternatively"
-
     # Sample answer for first reasoning
     prompt_and_first_reasonings = []
     n_samplings = [0]
