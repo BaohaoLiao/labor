@@ -106,15 +106,26 @@ def main(args, llm, tokenizer):
 
         if i == 0:
             print(full_prompt)
+
+        preds = []
+        scores = []
+        model_outputs = []
+        for i, model_output in baseline_result["model_output"]:
+            if "Alternatively" in model_output:
+                preds.append(baseline_result["preds"])
+                scores.append(baseline_result["score"])
+                model_outputs.append(model_output)
+
+        assert len(preds) > 0
       
         sample = {
             "idx": example["idx"],
             "question": example["question"],
             "gt": example["answer"],
             "prompt": full_prompt,
-            "pred": baseline_result["preds"],
-            "score": baseline_result["score"],
-            "model_output": baseline_result["model_output"],
+            "pred": preds,
+            "score": score,
+            "model_output": model_outputs,
         }
         samples.append(sample)
 
@@ -124,8 +135,10 @@ def main(args, llm, tokenizer):
             assert "Alternatively" in model_output, f"{i}th sample {j} model_output doesn't have Alternatively"
 
     # Sample answer for first reasoning
-    prompt_and_first_reasonings = [] 
+    prompt_and_first_reasonings = []
+    n_samplings = [0]
     for i, sample in enumerate(samples):
+        n_samplings.append(n_samplings[-1] + len(sample["model_output"]))
         for j, model_output in enumerate(sample["model_output"]):
             first_reasoning = model_output.split("Alternatively")[0].rstrip()
             prompt_and_first_reasonings.append(sample["prompt"] + first_reasoning + "\n\n</think>")
@@ -148,11 +161,10 @@ def main(args, llm, tokenizer):
     assert len(outputs) == len(prompt_and_first_reasonings)
     end_time = time.time()
 
-    n_sampling = len(samples[0]["model_output"])
     first_reasoning_think_summarys = []
     for i in range(len(samples)):
         first_reasoning_think_summarys.append(
-            [output.outputs[0].text for output in outputs[i*n_sampling : (i+1)*n_sampling]]
+            [output.outputs[0].text for output in outputs[n_samplings[i] : n_samplings[i+1]]]
         )    
 
     # Extract pred and eval
