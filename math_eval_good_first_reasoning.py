@@ -117,6 +117,7 @@ def setup(args):
     main(args, llm, tokenizer, rm, rm_tokenizer)
 
 
+@torch.no_grad()
 def select_better_first_reasoning(rm, rm_tokenizer, question, reasonings, reward_operation, n_retain):
     def make_step_rewards(logits, token_masks):
         probabilities = F.softmax(logits, dim=-1)
