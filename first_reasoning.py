@@ -194,7 +194,7 @@ def main(args, llm, tokenizer):
     print(f"Saving first reasoning for {args.data_name} to {out_file}")
     json.dump(results, open(out_file, "w",), indent=4)
 
-    with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
+    with open(out_file.replace(".json", "_metrics.json"), "w") as f:
         json.dump(result_json, f, indent=4)
 
 
