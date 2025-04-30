@@ -120,7 +120,7 @@ def main(args, llm, tokenizer):
 
     # Make sure there are first reasoning
     for i, sample in enumerate(samples):
-        for j, model_output in sample["model_output"]:
+        for j, model_output in enumerate(sample["model_output"]):
             assert "Alternatively" in model_output, f"{i}th sample {j} model_output doesn't have Alternatively"
 
     # Sample answer for first reasoning
@@ -183,9 +183,19 @@ def main(args, llm, tokenizer):
             }
         )
 
-  
-    print(f"Saving rewards for {args.data_name} to {out_file}")
-    json.dump(samples, open(out_file, "w",), indent=4)
+    time_use = (end_time - start_time) / 60
+    result_json = {
+        "num_samples": len(samples),
+        "pass@1": np.mean(avg_acc),
+        "time_use_in_min": time_use,
+    }
+    print(result_json)
+
+    print(f"Saving first reasoning for {args.data_name} to {out_file}")
+    json.dump(results, open(out_file, "w",), indent=4)
+
+    with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
+        json.dump(result_json, f, indent=4)
 
 
 if __name__ == "__main__":
