@@ -115,6 +115,8 @@ def main(args):
             pruned_bon_accs.append(pruned_sample_scores[max_ind])
             pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
 
+        print(pruned_avg_accs, pruned_bon_accs, pruned_maj_accs)
+
         print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | BoN: {np.mean(pruned_bon_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}")
 
         
