@@ -1,4 +1,5 @@
 import json
+import random
 import argparse
 import numpy as np
 
@@ -92,9 +93,42 @@ def main(args):
 
     print(f"  Original || Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}")
 
-    # Pruning
-    target_ns = [int(i) for i in args.target_ns.split(",")]
 
+    # Random pruning
+    target_ns = [int(i) for i in args.target_ns.split(",")]
+    n_sampling = len(samples[0]["pred"])
+
+    for target_n in target_ns:
+        random_avg_accs = []
+        random_maj_accs = []
+        random_bon_accs = []
+        for sample in samples:
+            aggregate_random_avg_accs = []
+            aggregate_random_maj_accs = []
+            aggregate_random_bon_accs = []
+            for i in range(50):
+                pruned_inds = random.sample(range(0, 64), 5)
+                pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
+                pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
+                pruned_sample_step_rewards = [sample["reward"][i] for i in pruned_inds]
+
+                pruned_sample_rewards = [
+                    step_reward_aggregate(reward, option=args.reward_option) for reward in pruned_sample_step_rewards
+                ]
+                max_ind = pruned_sample_rewards.index(max(pruned_sample_rewards))
+
+                aggregate_random_avg_accs.append(np.mean(pruned_sample_scores))
+                aggregate_random_maj_accs.append(pruned_sample_scores[max_ind])
+                aggregate_random_bon_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
+
+            random_avg_accs.append(np.mean(aggregate_random_avg_accs))
+            random_maj_accs.append(np.mean(aggregate_random_maj_accs))
+            random_bon_accs.append(np.mean(aggregate_random_bon_accs))
+
+        print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | BoN: {np.mean(random_bon_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}")
+
+
+    # Pruning
     for target_n in target_ns:
         pruned_avg_accs = []
         pruned_maj_accs = []
