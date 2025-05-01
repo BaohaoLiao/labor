@@ -130,13 +130,13 @@ def main(args, llm, tokenizer):
             count = 0
             for j in range(n_sampling):
                 if j in error_ids:
-                    sample_rewards.append([float("-inf")])
+                    sample_rewards.append([0.0])
                 else:
                     step_rewards = F.softmax(llm_outputs[count].outputs.data, dim=-1)[:, 1].tolist()
                     sample_rewards.append([round(i, 5) for i in step_rewards])
                     count += 1
         else:
-            sample_rewards = [[float("-inf")] for _ in range(n_sampling)]
+            sample_rewards = [[0.0] for _ in range(n_sampling)]
 
         sample["reward"] = sample_rewards
   
