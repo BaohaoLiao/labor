@@ -47,8 +47,4 @@ def main(args):
         
 if __name__ == "__main__":
     args = parse_args()
-    for arg, value in vars(args).items():
-        print(f"  {arg}: {value}")
-    print()
-
     main(args)
