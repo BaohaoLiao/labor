@@ -77,7 +77,7 @@ def obtain_embeddings(llm, tokenizer, responses):
         padding=True, 
         truncation=True, 
         return_tensors='pt'
-    )
+    ).to("cuda")
     with torch.no_grad():
         outputs = llm(**batch_dict)
     embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
