@@ -21,8 +21,6 @@ def parse_args():
     parser.add_argument("--max_num_seqs", type=int, default=32)
     parser.add_argument("--input_file", type=str, default=None)
     args = parser.parse_args()
-    # top_p must be 1 when using greedy sampling (vllm)
-    args.top_p = 1 if args.temperature == 0 else args.top_p
     return args
 
 
