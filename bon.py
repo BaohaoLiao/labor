@@ -1,3 +1,4 @@
+import os
 import json
 import random
 import argparse
@@ -11,6 +12,12 @@ def parse_args():
     parser.add_argument("--target_ns", type=str, default="1,2,4,8,16,32,64")
     args = parser.parse_args()
     return args
+
+def set_seed(seed: int = 42) -> None:
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    print(f"Random seed set as {seed}")
 
 
 def prepare_data(args):
@@ -106,7 +113,7 @@ def main(args):
             aggregate_random_maj_accs = []
             aggregate_random_bon_accs = []
             for _ in range(100):
-                pruned_inds = random.sample(range(0, n_sampling), target_n)
+                pruned_inds = np.random.choice(n_sampling, target_n, replace=False)
                 pruned_inds.sort()
                 pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
                 pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
@@ -156,4 +163,5 @@ def main(args):
         
 if __name__ == "__main__":
     args = parse_args()
+    set_seed(0)
     main(args)
