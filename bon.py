@@ -35,14 +35,16 @@ def main(args):
     samples = prepare_data(args)
 
     avg_accs = []
+    bon_avg_accs = []
     for sample in samples:
+        avg_accs.append(np.mean(sample["score"]))
         sample_rewards = [
             step_reward_aggregate(reward, option=args.reward_option) for reward in sample["reward"]
         ]
         max_ind = sample_rewards.index(max(sample_rewards))
-        avg_accs.append(sample["score"][max_ind])
+        bon_avg_accs.append(sample["score"][max_ind])
 
-    print(f"BoN is {np.mean(avg_accs):.4f}")
+    print(f"BoN: {np.mean(bon_avg_accs):.4f} | Acc: {np.mean(avg_accs):.4f}")
 
         
 if __name__ == "__main__":
