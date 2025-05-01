@@ -105,7 +105,7 @@ def main(args):
             aggregate_random_avg_accs = []
             aggregate_random_maj_accs = []
             aggregate_random_bon_accs = []
-            for _ in range(50):
+            for _ in range(100):
                 pruned_inds = random.sample(range(0, n_sampling), target_n)
                 pruned_inds.sort()
                 pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
