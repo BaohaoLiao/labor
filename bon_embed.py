@@ -69,7 +69,7 @@ def embed_pruning(embeddings, target_n):
     assert target_n <= len(embeddings)
 
     kmeans = KMeans(
-        n_clusters=2,
+        n_clusters=target_n,
         random_state=42,
         init='k-means++',
         n_init='auto'
