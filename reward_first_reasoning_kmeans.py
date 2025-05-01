@@ -7,7 +7,6 @@ from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 import transformers
-from vllm import LLM
 
 
 
@@ -15,7 +14,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_name", default="math", type=str)
     parser.add_argument("--model_name_or_path", default="gpt-4", type=str)
-    parser.add_argument("--proxy_model_name_or_path", default="gpt-4", type=str)
     parser.add_argument("--output_dir", default="./output", type=str)
     parser.add_argument("--num_test_sample", default=-1, type=int)  # -1 for full data
     parser.add_argument("--seed", default=0, type=int)
@@ -52,41 +50,43 @@ def prepare_data(args):
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
-    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_rm{model_name}_firstend{args.first_reasoning_end_idx}.json"
+    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_embed{model_name}_firstend{args.first_reasoning_end_idx}.json"
     os.makedirs(f"{output_dir}/{args.data_name}", exist_ok=True)
     return examples, out_file
 
 
 def setup(args):
     # load model
-    available_gpus = os.environ["CUDA_VISIBLE_DEVICES"].split(",")
-    llm = LLM(
-        model=args.model_name_or_path,
-        tensor_parallel_size=len(available_gpus) // args.pipeline_parallel_size,
-        pipeline_parallel_size=args.pipeline_parallel_size,
-        trust_remote_code=True,
-        task="reward",
-        max_num_seqs=args.max_num_seqs,
-        seed=args.seed,
+    llm = transformers.AutoModel.from_pretrained(
+        args.model_name_or_path,
+        device_map='balanced',
+        torch_dtype=torch.half,
+    ).eval().requires_grad_(False)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path)
+    main(args, llm, tokenizer)
+
+
+@torch.no_grad()
+def obtain_embeddings(llm, tokenizer, responses):
+    def average_pool(last_hidden_states, attention_mask):
+        last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
+        return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
+    
+    batch_dict = tokenizer(
+        ["query: " + r for r in responses], 
+        max_length=512, 
+        padding=True, 
+        truncation=True, 
+        return_tensors='pt'
     )
-    tokenizer = llm.get_tokenizer()
-    proxy_tokenizer = transformers.AutoTokenizer.from_pretrained(args.proxy_model_name_or_path)
-
-    # Reward
-    main(args, llm, tokenizer, proxy_tokenizer)
-
-
-def create_messages(query, response):
-    """Create messages for the reward model."""
-    response = response.strip()
-    return [
-        {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."},
-        {"role": "user", "content": query},
-        {"role": "assistant", "content": "<extra_0>".join(response.split("\n\n")) + "<extra_0>"},
-    ]
+    with torch.no_grad():
+        outputs = llm(**batch_dict)
+    embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+    embeddings = F.normalize(embeddings, p=2, dim=1)
+    return embeddings.tolist()
 
 
-def main(args, llm, tokenizer, proxy_tokenizer):
+def main(args, llm, tokenizer):
     examples, out_file = prepare_data(args)
     print("=" * 50)
     print("data:", args.data_name, " , #samples:", len(examples))
@@ -107,35 +107,17 @@ def main(args, llm, tokenizer, proxy_tokenizer):
             "score": example["score"],
             "reward": example["reward"],
             "model_output": example["model_output"],
+            "first_reasoning_reward": example["first_reasoning_reward"],
         }
         samples.append(sample)
 
     # Reward the think_summary, i.e. everything after </think>
     n_sampling = len(samples[0]["model_output"])
     for i, sample in enumerate(samples):
-        sample_tok_messages = []
-        for j, model_output in enumerate(sample["model_output"]):
-            first_reasoning = proxy_tokenizer.decode(
-                proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
-            ).strip()
-            messages = create_messages(sample["question"], first_reasoning)
-            sample_tok_messages.append(
-                    tokenizer.apply_chat_template(
-                        messages, 
-                        tokenize=False, 
-                        add_generation_prompt=False
-                    )
-            )
-
-        llm_outputs = llm.encode(sample_tok_messages)
-        sample_rewards = []
-        for j in range(n_sampling):
-            step_rewards = F.softmax(llm_outputs[j].outputs.data, dim=-1)[:, 1].tolist()
-            sample_rewards.append([round(i, 5) for i in step_rewards])
-
-        sample["first_reasoning_reward"] = sample_rewards
+        embeddings = obtain_embeddings(llm, tokenizer, sample["model_output"])
+        sample["emb"] = embeddings
   
-    print(f"Saving first reasoning rewards for {args.data_name} to {out_file}")
+    print(f"Saving first reasoning embedding for {args.data_name} to {out_file}")
     json.dump(samples, open(out_file, "w",), indent=4)
 
 
