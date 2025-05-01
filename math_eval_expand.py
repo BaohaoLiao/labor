@@ -8,13 +8,13 @@ from tqdm import tqdm
 import torch
 from vllm import LLM, SamplingParams
 
-from utils.data import load_data, construct_prompt
-from utils.parser import parse_question, parse_ground_truth, extract_and_verify_pred
+from utils.data import construct_prompt
+from utils.parser import parse_ground_truth, extract_and_verify_pred
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_names", default="math", type=str)
+    parser.add_argument("--data_name", default="math", type=str)
     parser.add_argument("--data_dir", default="./datas", type=str)
     parser.add_argument("--model_name_or_path", default="gpt-4", type=str)
     parser.add_argument("--output_dir", default="./output", type=str)
@@ -30,7 +30,13 @@ def parse_args():
     parser.add_argument('--enable_prefix_caching', action='store_true', default=False)
     parser.add_argument('--disable_chunked_prefill', action='store_true', default=False)
     parser.add_argument('--max_model_len', type=int, default=64000)
-    parser.add_argument("--n_sampling", type=int, default=1)
+
+    # For good first reasoning
+    parser.add_argument("--rewards_operation", choices=["min", "avg", "prod", "last"], default="avg")
+    parser.add_argument("--input_file", type=str, default=None)
+    parser.add_argument("--first_reasoning_end_idx", type=int, default=512)
+    parser.add_argument("--target_n", type=int, default=1)
+    parser.add_argument("--expand_factor", type=int, default=1)
 
     args = parser.parse_args()
     # top_p must be 1 when using greedy sampling (vllm)
@@ -49,25 +55,21 @@ def set_seed(seed: int = 42) -> None:
     print(f"Random seed set as {seed}")
 
 
-def prepare_data(data_name, args):
-    if "math500_level" in data_name:
-        level = int(data_name.strip()[-1])
-        examples = load_data("math500", args.data_dir)
-        examples = [example for example in examples if example["level"]==level]
-    else:
-        examples = load_data(data_name, args.data_dir)
+def prepare_data(args):
+    with open(args.input_file, 'r') as f:
+        examples = json.load(f)
 
     # sample `num_test_sample` from dataset for debug purpose
     if args.num_test_sample > 0:
         examples = examples[: args.num_test_sample]
 
     # get out_file name
-    out_file_prefix = f"{args.prompt_type}_seed{args.seed}_t{args.temperature}topp{args.top_p}minp{args.min_p}_len{args.max_tokens_per_call}"
+    out_file_prefix = args.model_name_or_path.split("/")[-1]
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
-    out_file = f"{output_dir}/{data_name}/{out_file_prefix}_num{args.num_test_sample}_n{args.n_sampling}.json"
-    os.makedirs(f"{output_dir}/{data_name}", exist_ok=True)
+    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_targetn{args.target_n}_expand{args.expand_factor}.json"
+    os.makedirs(f"{output_dir}/{args.data_name}", exist_ok=True)
     return examples, out_file
 
 
@@ -85,24 +87,45 @@ def setup(args):
         max_model_len=args.max_model_len,
         seed=args.seed,
     )
+    tokenizer = llm.get_tokenizer()
 
-    # infer & eval
-    data_list = args.data_names.split(",")
-    for data_name in data_list:
-        main(llm, data_name, args)
+    # Infer 
+    main(args, llm, tokenizer)
 
 
-def main(llm, data_name, args):
-    examples, out_file = prepare_data(data_name, args)
+def step_reward_aggregate(step_reward, option="avg"):
+    if option == "avg":
+        return np.mean(step_reward)
+    elif option == "min":
+        return np.min(step_reward)
+    elif option == "max":
+        return np.max(step_reward)
+    elif option == "last":
+        return step_reward[-1]
+    else:
+        return np.prod(step_reward)
+
+
+def pruning(sample_step_rewards, target_n, option="avg"):
+    assert target_n <= len(sample_step_rewards)
+    sample_rewards = [
+        step_reward_aggregate(reward, option=option) for reward in sample_step_rewards
+    ]
+    indexed_sample_rewards = [(val, idx) for idx, val in enumerate(sample_rewards)]
+    indexed_sample_rewards.sort(reverse=True)
+    return [indexed_sample_rewards[i][1] for i in range(target_n)]
+
+
+def main(args, llm, tokenizer):
+    examples, out_file = prepare_data(args)
     print("=" * 50)
-    print("data:", data_name, " , #samples:", len(examples))
+    print("data:", args.data_name, " , #samples:", len(examples))
 
     samples = []
     for i, example in tqdm(enumerate(examples), total=len(examples)):
         idx = int(example["idx"])
 
         # parse question and answer
-        example["question"] = parse_question(example, data_name)
         if example["question"] == "":
             continue
         full_prompt = construct_prompt(example, args)
@@ -113,33 +136,32 @@ def main(llm, data_name, args):
         sample = {
             "idx": idx,
             "question": example["question"],
-            "gt": example["answer"],
+            "gt": example["gt"],
+            "anwer": example["gt"],
             "prompt": full_prompt,
+            "pred": example["pred"],
+            "score": example["score"],
+            "model_output": example["model_output"],
+            "first_reasoning_reward": example["first_reasoning_reward"],
         }
-
-        # add remain fields
-        for key in [
-            "level",
-            "type",
-            "unit",
-            "solution_type",
-            "choices",
-            "solution",
-            "ques_type",
-            "ans_type",
-            "answer_type",
-            "dataset",
-            "subfield",
-            "filed",
-            "theorem",
-            "answer",
-        ]:
-            if key in example:
-                sample[key] = example[key]
         samples.append(sample)
 
+    # Pruning
+    prompts = []
+    for sample in samples:
+        pruned_ids = pruning(
+            sample["first_reasoning_reward"], 
+            args.target_n, 
+            option=args.rewards_operation
+        )
+        pruned_ids.sort()
+        for id in pruned_ids:
+            first_reasoning = tokenizer.decode(
+                tokenizer.encode(sample["model_output"][id])[1:args.first_reasoning_end_idx]
+            )
+            prompts.append(sample["prompt"] + first_reasoning)
+
     # start inference
-    prompts = [sample["prompt"] for sample in samples]
     start_time = time.time()
     outputs = llm.generate(
         prompts,
@@ -148,7 +170,7 @@ def main(llm, data_name, args):
             top_p=args.top_p,
             min_p=args.min_p,
             max_tokens=args.max_tokens_per_call,
-            n=args.n_sampling,
+            n=args.expand_factor,
             skip_special_tokens=False,
             seed=args.seed,
         ),
@@ -157,21 +179,27 @@ def main(llm, data_name, args):
     assert len(outputs) == len(prompts)
     end_time = time.time()
 
+    # Reorder
+    model_outputs = []
+    for i in range(len(samples)):
+        sample_model_outputs = []
+        for j in range(args.target_n):
+            sample_model_outputs += [o.text for o in outputs[i*args.target_n + j].outputs]
+        model_outputs.append(sample_model_outputs)
+
     # Extract pred and eval
     results = []
     avg_acc = []
-    for sample, output in zip(samples, outputs):
-        gt = parse_ground_truth(sample, data_name)
+    for sample, sample_model_outputs in zip(samples, model_outputs):
+        gt = parse_ground_truth(sample, args.data_name)
 
         preds = []
         scores = []
-        for o in output.outputs:
+        for model_output in sample_model_outputs:
             # Avoid the bug in math_verify for multiple boxeds
-            if "</think>" in o.text:
-                model_output = o.text.split("</think>")[-1]
-            else:
-                model_output = o.text
-            pred, score = extract_and_verify_pred(model_output, gt, data_name)
+            if "</think>" in model_output:
+                model_output = model_output.split("</think>")[-1]
+            pred, score = extract_and_verify_pred(model_output, gt, args.data_name)
             preds.append(pred)
             scores.append(score)
         avg_acc.append(np.mean(scores))
@@ -181,9 +209,12 @@ def main(llm, data_name, args):
                 "idx": sample["idx"],
                 "question": sample["question"],
                 "gt": str(sample["answer"]),
-                "pred": preds,
-                "score": scores,
-                "model_output": [o.text for o in output.outputs],
+                "pred": sample["preds"],
+                "score": sample["scores"],
+                "prune_and_expand_pred": preds,
+                "prune_and_expand_scores": scores,
+                "model_output": sample["model_output"],
+                "prune_and_expand_model_output": sample_model_outputs,
             }
         )
 
@@ -195,7 +226,7 @@ def main(llm, data_name, args):
     }
     print(result_json)
 
-    print(f"Saving model outputs for {data_name} to {out_file}")
+    print(f"Saving model outputs for {args.data_name} to {out_file}")
     json.dump(results, open(out_file, "w",), indent=4)
 
     with open(out_file.replace(".json", f"_metrics.json"), "w") as f:
