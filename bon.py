@@ -91,7 +91,7 @@ def main(args):
 
         maj_accs.append(majority_voting(sample["pred"], sample["score"]))
 
-    print(f"  Original || Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}")
+    print(f"  Original || Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}\n")
 
 
     # Random pruning
@@ -125,7 +125,7 @@ def main(args):
             random_maj_accs.append(np.mean(aggregate_random_maj_accs))
             random_bon_accs.append(np.mean(aggregate_random_bon_accs))
 
-        print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | BoN: {np.mean(random_bon_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}")
+        print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | BoN: {np.mean(random_bon_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}\n")
 
 
     # Pruning
@@ -149,7 +149,7 @@ def main(args):
             pruned_bon_accs.append(pruned_sample_scores[max_ind])
             pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
 
-        print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | BoN: {np.mean(pruned_bon_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}")
+        print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | BoN: {np.mean(pruned_bon_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}\n")
 
         
 if __name__ == "__main__":
