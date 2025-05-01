@@ -112,7 +112,7 @@ def main(args, llm, tokenizer):
         model_outputs = []
         for i, model_output in enumerate(baseline_result["model_output"]):
             if "Alternatively" in model_output:
-                preds.append(baseline_result["preds"][i])
+                preds.append(baseline_result["pred"][i])
                 scores.append(baseline_result["score"][i])
                 model_outputs.append(model_output)
 
