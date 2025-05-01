@@ -59,7 +59,7 @@ def majority_voting(preds, scores):
             max_count = count
             majority_pred = pred
     
-    return prediction_counts[majority_pred]
+    return prediction_scores[majority_pred]
 
 
 def main(args):
