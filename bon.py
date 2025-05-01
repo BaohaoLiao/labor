@@ -7,6 +7,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--reward_option", choices=["avg", "min", "max", "last", "prod"], default="avg")
+    parser.add_argument("--target_ns", type=str, default="1,2,4,8,16,32,64")
     args = parser.parse_args()
     return args
 
@@ -61,9 +62,20 @@ def majority_voting(preds, scores):
     return prediction_scores[majority_pred]
 
 
+def pruning(sample_step_rewards, target_n, option="avg"):
+    assert target_n <= len(sample_step_rewards)
+    sample_rewards = [
+        step_reward_aggregate(reward, option=option) for reward in sample_step_rewards
+    ]
+    indexed_sample_rewards = [(val, idx) for idx, val in enumerate(sample_rewards)]
+    indexed_sample_rewards.sort(reverse=True)
+    return [indexed_sample_rewards[i][1] for i in range(target_n)]
+
+
 def main(args):
     samples = prepare_data(args)
 
+    # All n_sampling
     avg_accs = []
     maj_accs = []
     bon_accs = []
@@ -78,7 +90,32 @@ def main(args):
 
         maj_accs.append(majority_voting(sample["pred"], sample["score"]))
 
-    print(f"Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}")
+    print(f"  Original || Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}")
+
+    # Pruning
+    target_ns = [int(i) for i in args.target_ns.split(",")]
+
+    for target_n in target_ns:
+        pruned_avg_accs = []
+        pruned_maj_accs = []
+        pruned_bon_accs = []
+        for sample in samples:
+            sample_first_reasoning_step_rewards = sample["first_reasoning_reward"]
+            pruned_inds = pruning(sample_first_reasoning_step_rewards, target_n, option=args.reward_option)
+            pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
+            pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
+            pruned_sample_step_rewards = [sample["reward"][i] for i in pruned_inds]
+
+            pruned_sample_rewards = [
+                step_reward_aggregate(reward, option=args.reward_option) for reward in pruned_sample_step_rewards
+            ]
+            max_ind = pruned_sample_rewards.index(max(pruned_sample_rewards))
+
+            pruned_avg_accs.append(np.mean(pruned_sample_scores))
+            pruned_bon_accs.append(pruned_sample_scores[max_ind])
+            pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
+
+        print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | BoN: {np.mean(pruned_bon_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}")
 
         
 if __name__ == "__main__":
