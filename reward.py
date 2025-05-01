@@ -15,7 +15,6 @@ def parse_args():
     parser.add_argument("--data_name", default="math", type=str)
     parser.add_argument("--model_name_or_path", default="gpt-4", type=str)
     parser.add_argument("--output_dir", default="./output", type=str)
-    parser.add_argument("--prompt_type", default="deepseek-r1", type=str)
     parser.add_argument("--num_test_sample", default=-1, type=int)  # -1 for full data
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument("--pipeline_parallel_size", type=int, default=1)
