@@ -82,7 +82,7 @@ def create_messages(query, response):
 
 
 def main(args, llm, tokenizer):
-    examples, out_file = prepare_data(args, args.data_name)
+    examples, out_file = prepare_data(args)
     print("=" * 50)
     print("data:", args.data_name, " , #samples:", len(examples))
 
