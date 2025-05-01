@@ -3,7 +3,6 @@ import argparse
 import numpy as np
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str, default=None)
