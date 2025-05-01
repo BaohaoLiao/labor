@@ -107,6 +107,7 @@ def main(args):
             aggregate_random_bon_accs = []
             for _ in range(50):
                 pruned_inds = random.sample(range(0, n_sampling), target_n)
+                pruned_inds.sort()
                 pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
                 pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
                 pruned_sample_step_rewards = [sample["reward"][i] for i in pruned_inds]
@@ -136,6 +137,7 @@ def main(args):
         for sample in samples:
             sample_first_reasoning_step_rewards = sample["first_reasoning_reward"]
             pruned_inds = pruning(sample_first_reasoning_step_rewards, target_n, option=args.reward_option)
+            pruned_inds.sort()
             pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
             pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
             pruned_sample_step_rewards = [sample["reward"][i] for i in pruned_inds]
