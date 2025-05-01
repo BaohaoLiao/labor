@@ -38,7 +38,7 @@ def majority_voting(preds, scores):
     # Filter out None predictions and gather the valid predictions and scores
     valid_entries = [(pred, score) for pred, score in zip(preds, scores) if pred is not None]
     if not valid_entries:
-        return None, 0.0  # Return None if no valid predictions
+        return 0.0  # Return None if no valid predictions
     
     # Count occurrences of each prediction
     prediction_counts = {}
