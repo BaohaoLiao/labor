@@ -107,7 +107,7 @@ def main(args, llm, tokenizer):
             "score": example["score"],
             "reward": example["reward"],
             "model_output": example["model_output"],
-            "first_reasoning_reward": example["first_reasoning_reward"],
+            #"first_reasoning_reward": example["first_reasoning_reward"],
         }
         samples.append(sample)
 
