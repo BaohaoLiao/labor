@@ -44,11 +44,12 @@ def prepare_data(args):
         examples = examples[:args.num_test_sample]
 
     # get out_file name
+    model_name = args.model_name_or_path.split("/")[-1]
     out_file_prefix = args.input_file.split("/")[-1][:-len(".json")]
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
-    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_rm{args.model_name_or_path}.json"
+    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_rm{model_name}.json"
     os.makedirs(f"{output_dir}/{args.data_name}", exist_ok=True)
     return examples, out_file
 
