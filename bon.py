@@ -81,14 +81,13 @@ def main(args):
     maj_accs = []
     bon_accs = []
     for sample in samples:
-        avg_accs.append(np.mean(sample["score"]))
-
         sample_rewards = [
             step_reward_aggregate(reward, option=args.reward_option) for reward in sample["reward"]
         ]
         max_ind = sample_rewards.index(max(sample_rewards))
-        bon_accs.append(sample["score"][max_ind])
 
+        avg_accs.append(np.mean(sample["score"]))
+        bon_accs.append(sample["score"][max_ind])
         maj_accs.append(majority_voting(sample["pred"], sample["score"]))
 
     print(f"  Original || Acc: {np.mean(avg_accs):.4f} | BoN: {np.mean(bon_accs):.4f} | Maj: {np.mean(maj_accs):.4f}\n")
@@ -118,12 +117,12 @@ def main(args):
                 max_ind = pruned_sample_rewards.index(max(pruned_sample_rewards))
 
                 aggregate_random_avg_accs.append(np.mean(pruned_sample_scores))
-                aggregate_random_maj_accs.append(pruned_sample_scores[max_ind])
-                aggregate_random_bon_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
+                aggregate_random_bon_accs.append(pruned_sample_scores[max_ind])
+                aggregate_random_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
 
             random_avg_accs.append(np.mean(aggregate_random_avg_accs))
-            random_maj_accs.append(np.mean(aggregate_random_maj_accs))
             random_bon_accs.append(np.mean(aggregate_random_bon_accs))
+            random_maj_accs.append(np.mean(aggregate_random_maj_accs))
 
         print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | BoN: {np.mean(random_bon_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}")
 
