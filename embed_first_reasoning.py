@@ -18,7 +18,6 @@ def parse_args():
     parser.add_argument("--num_test_sample", default=-1, type=int)  # -1 for full data
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument("--pipeline_parallel_size", type=int, default=1)
-    parser.add_argument("--max_num_seqs", type=int, default=32)
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--first_reasoning_end_idx", type=int, default=512)
     args = parser.parse_args()
