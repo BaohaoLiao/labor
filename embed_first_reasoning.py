@@ -82,7 +82,7 @@ def obtain_embeddings(llm, tokenizer, responses):
         outputs = llm(**batch_dict)
     embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
     embeddings = F.normalize(embeddings, p=2, dim=1)
-    return embeddings.tolist()
+    return embeddings.cpu().tolist()
 
 
 def main(args, llm, tokenizer):
