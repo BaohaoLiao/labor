@@ -9,6 +9,7 @@ from sklearn.cluster import KMeans
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str, default=None)
+    parser.add_argument("--reward_option", choices=["avg", "min", "max", "last", "prod"], default="avg")
     parser.add_argument("--target_ns", type=str, default="1,2,4,8,16,32,64")
     args = parser.parse_args()
     return args
