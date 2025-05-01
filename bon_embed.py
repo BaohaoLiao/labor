@@ -144,7 +144,7 @@ def main(args):
         pruned_maj_accs = []
         pruned_bon_accs = []
         for sample in samples:
-            sample_first_reasoning_embed = np.array(sample["embed"])
+            sample_first_reasoning_embed = np.array(sample["emb"])
             pruned_inds = embed_pruning(sample_first_reasoning_embed, target_n)
             pruned_inds.sort()
             pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
