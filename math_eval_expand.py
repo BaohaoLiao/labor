@@ -64,7 +64,7 @@ def prepare_data(args):
         examples = examples[: args.num_test_sample]
 
     # get out_file name
-    out_file_prefix = args.model_name_or_path.split("/")[-1]
+    out_file_prefix = args.input_file.split("/")[-1][:-len(".json")]
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
