@@ -118,6 +118,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
             first_reasoning = proxy_tokenizer.decode(
                 proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
             ).strip()
+            first_reasoning = "\n\n".join(first_reasoning.split("\n\n")[:-1])
             messages = create_messages(sample["question"], first_reasoning)
             sample_tok_messages.append(
                     tokenizer.apply_chat_template(
