@@ -105,7 +105,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
             "gt": example["gt"],
             "pred": example["pred"],
             "score": example["score"],
-            #"reward": example["reward"],
+            "reward": example["reward"],
             "model_output": example["model_output"],
         }
         samples.append(sample)
