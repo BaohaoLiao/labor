@@ -209,10 +209,10 @@ def main(args, llm, tokenizer):
                 "idx": sample["idx"],
                 "question": sample["question"],
                 "gt": str(sample["answer"]),
-                "pred": sample["preds"],
-                "score": sample["scores"],
+                "pred": sample["pred"],
+                "score": sample["score"],
                 "prune_and_expand_pred": preds,
-                "prune_and_expand_scores": scores,
+                "prune_and_expand_score": scores,
                 "model_output": sample["model_output"],
                 "prune_and_expand_model_output": sample_model_outputs,
             }
