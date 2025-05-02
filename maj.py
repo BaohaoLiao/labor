@@ -57,16 +57,6 @@ def majority_voting(preds, scores):
     return prediction_scores[majority_pred]
 
 
-def pruning(sample_step_rewards, target_n, option="avg"):
-    assert target_n <= len(sample_step_rewards)
-    sample_rewards = [
-        step_reward_aggregate(reward, option=option) for reward in sample_step_rewards
-    ]
-    indexed_sample_rewards = [(val, idx) for idx, val in enumerate(sample_rewards)]
-    indexed_sample_rewards.sort(reverse=True)
-    return [indexed_sample_rewards[i][1] for i in range(target_n)]
-
-
 def main(args):
     samples = prepare_data(args)
 
@@ -123,7 +113,7 @@ def main(args):
                     pruned_inds += random.sample(range(i*args.target_n, (i+1)*args.target_n), expand_factor)
                 pruned_inds.sort()
                 pruned_sample_preds = [sample["prune_and_expand_pred"][i] for i in pruned_inds]
-                pruned_sample_scores = [sample["prune_and_expand_scores"][i] for i in pruned_inds]
+                pruned_sample_scores = [sample["prune_and_expand_score"][i] for i in pruned_inds]
 
                 aggregate_pruned_avg_accs.append(np.mean(pruned_sample_scores))
                 aggregate_pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
