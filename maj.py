@@ -8,7 +8,7 @@ import numpy as np
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str, default=None)
-    parser.add_argument("--target_n", type=str, default="8")
+    parser.add_argument("--target_n", type=int, default="8")
     parser.add_argument("--expand_factors", type=str, default="1,2,4,8")
     args = parser.parse_args()
     return args
@@ -111,7 +111,7 @@ def main(args):
     # Pruning and expand
     for expand_factor in expand_factors:
         target_n = args.target_n * expand_factor
-        
+
         pruned_avg_accs = []
         pruned_maj_accs = []
         for sample in samples:
