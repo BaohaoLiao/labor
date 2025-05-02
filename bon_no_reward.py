@@ -10,6 +10,7 @@ def parse_args():
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--reward_option", choices=["avg", "min", "max", "last", "prod"], default="avg")
     parser.add_argument("--target_ns", type=str, default="1,2,4,8,16,32,64")
+    parser.add_argument("--baseline", action='store_true')
     args = parser.parse_args()
     return args
 
@@ -92,47 +93,48 @@ def main(args):
 
     print(f"  Original || Acc: {np.mean(avg_accs):.4f} | Maj: {np.mean(maj_accs):.4f}\n")
 
+    if not args.baseline:
 
-    # Random pruning
-    target_ns = [int(i) for i in args.target_ns.split(",")]
-    n_sampling = len(samples[0]["pred"])
-    for target_n in target_ns:
-        random_avg_accs = []
-        random_maj_accs = []
-        for sample in samples:
-            aggregate_random_avg_accs = []
-            aggregate_random_maj_accs = []
-            for _ in range(100):
-                pruned_inds = np.random.choice(n_sampling, target_n, replace=False)
+        # Random pruning
+        target_ns = [int(i) for i in args.target_ns.split(",")]
+        n_sampling = len(samples[0]["pred"])
+        for target_n in target_ns:
+            random_avg_accs = []
+            random_maj_accs = []
+            for sample in samples:
+                aggregate_random_avg_accs = []
+                aggregate_random_maj_accs = []
+                for _ in range(100):
+                    pruned_inds = np.random.choice(n_sampling, target_n, replace=False)
+                    pruned_inds.sort()
+                    pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
+                    pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
+
+                    aggregate_random_avg_accs.append(np.mean(pruned_sample_scores))
+                    aggregate_random_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
+
+                random_avg_accs.append(np.mean(aggregate_random_avg_accs))
+                random_maj_accs.append(np.mean(aggregate_random_maj_accs))
+
+            print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}")
+
+        print("\n")
+
+        # Pruning
+        for target_n in target_ns:
+            pruned_avg_accs = []
+            pruned_maj_accs = []
+            for sample in samples:
+                sample_first_reasoning_step_rewards = sample["first_reasoning_reward"]
+                pruned_inds = pruning(sample_first_reasoning_step_rewards, target_n, option=args.reward_option)
                 pruned_inds.sort()
                 pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
                 pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
 
-                aggregate_random_avg_accs.append(np.mean(pruned_sample_scores))
-                aggregate_random_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
+                pruned_avg_accs.append(np.mean(pruned_sample_scores))
+                pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
 
-            random_avg_accs.append(np.mean(aggregate_random_avg_accs))
-            random_maj_accs.append(np.mean(aggregate_random_maj_accs))
-
-        print(f"  Random n_sampling={target_n} || Acc: {np.mean(random_avg_accs):.4f} | Maj: {np.mean(random_maj_accs):.4f}")
-
-    print("\n")
-
-    # Pruning
-    for target_n in target_ns:
-        pruned_avg_accs = []
-        pruned_maj_accs = []
-        for sample in samples:
-            sample_first_reasoning_step_rewards = sample["first_reasoning_reward"]
-            pruned_inds = pruning(sample_first_reasoning_step_rewards, target_n, option=args.reward_option)
-            pruned_inds.sort()
-            pruned_sample_preds = [sample["pred"][i] for i in pruned_inds]
-            pruned_sample_scores = [sample["score"][i] for i in pruned_inds]
-
-            pruned_avg_accs.append(np.mean(pruned_sample_scores))
-            pruned_maj_accs.append(majority_voting(pruned_sample_preds, pruned_sample_scores))
-
-        print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}")
+            print(f"  Pruned n_sampling={target_n} || Acc: {np.mean(pruned_avg_accs):.4f} | Maj: {np.mean(pruned_maj_accs):.4f}")
 
         
 if __name__ == "__main__":
