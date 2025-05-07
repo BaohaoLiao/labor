@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument("--max_num_seqs", type=int, default=32)
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--first_reasoning_end_idx", type=int, default=512)
+    parser.add_argument("--is_orm", action="store_true", default=False)
     args = parser.parse_args()
     return args
 
@@ -76,14 +77,21 @@ def setup(args):
     main(args, llm, tokenizer, proxy_tokenizer)
 
 
-def create_messages(query, response):
+def create_messages(query, response, is_orm=False):
     """Create messages for the reward model."""
     response = response.strip()
-    return [
-        {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."},
-        {"role": "user", "content": query},
-        {"role": "assistant", "content": "<extra_0>".join(response.split("\n\n")) + "<extra_0>"},
-    ]
+    if not is_orm:
+        return [
+            {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."},
+            {"role": "user", "content": query},
+            {"role": "assistant", "content": "<extra_0>".join(response.split("\n\n")) + "<extra_0>"},
+        ]
+    else:
+        return [
+            {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."},
+            {"role": "user", "content": query},
+            {"role": "assistant", "content": response},
+        ]
 
 
 def main(args, llm, tokenizer, proxy_tokenizer):
@@ -119,7 +127,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
                 proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
             ).strip()
             first_reasoning = "\n\n".join(first_reasoning.split("\n\n")[:-1])
-            messages = create_messages(sample["question"], first_reasoning)
+            messages = create_messages(sample["question"], first_reasoning, is_orm=args.is_orm)
             sample_tok_messages.append(
                     tokenizer.apply_chat_template(
                         messages, 
@@ -131,8 +139,12 @@ def main(args, llm, tokenizer, proxy_tokenizer):
         llm_outputs = llm.encode(sample_tok_messages)
         sample_rewards = []
         for j in range(n_sampling):
-            step_rewards = F.softmax(llm_outputs[j].outputs.data, dim=-1)[:, 1].tolist()
-            sample_rewards.append([round(i, 5) for i in step_rewards])
+            if not args.is_orm:
+                step_rewards = F.softmax(llm_outputs[j].outputs.data, dim=-1)[:, 1].tolist()
+                sample_rewards.append([round(i, 5) for i in step_rewards])
+            else:
+                outcome_reward = llm_outputs[j].outputs.data[-1].numpy()
+                sample_rewards.append([round(i, 5) for i in outcome_reward])
 
         sample["first_reasoning_reward"] = sample_rewards
   
