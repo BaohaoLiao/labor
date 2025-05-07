@@ -137,7 +137,6 @@ def main(args, llm, tokenizer, proxy_tokenizer):
             )
 
         llm_outputs = llm.encode(sample_tok_messages)
-        print(llm_outputs[0].outputs.data.size(), llm_outputs[j].outputs.data)
         sample_rewards = []
         for j in range(n_sampling):
             if not args.is_orm:
