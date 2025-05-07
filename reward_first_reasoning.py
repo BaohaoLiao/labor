@@ -137,6 +137,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
             )
 
         llm_outputs = llm.encode(sample_tok_messages)
+        print(llm_outputs[0].outputs.data.size(), llm_outputs[j].outputs.data)
         sample_rewards = []
         for j in range(n_sampling):
             if not args.is_orm:
@@ -144,7 +145,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
                 sample_rewards.append([round(i, 5) for i in step_rewards])
             else:
                 outcome_reward = llm_outputs[j].outputs.data[-1].numpy()
-                sample_rewards.append([round(i, 5) for i in outcome_reward])
+                sample_rewards.append([round(float(i), 5) for i in outcome_reward])
 
         sample["first_reasoning_reward"] = sample_rewards
   
