@@ -52,7 +52,6 @@ def extract_pred_and_parse(completion, data_name):
         pred = []
     return pred
 
-
 def extract_and_verify_pred(completion, gt, data_name):
     pred = extract_pred_and_parse(completion, data_name)
     score = verify(gt, pred)
