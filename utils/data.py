@@ -29,6 +29,19 @@ PROMPT_TEMPLATES = {
         "{input}<|im_end|>\n"
         "<|im_start|>assistant\n<think>\n"
     ),
+    "qwen3-no-think": (
+        "<|im_start|>system\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
+        "<|im_start|>user\n{input} /no_think<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n\n</think>\n"
+    ),
+    "qwen3-no-think-choice": (
+        "<|im_start|>user\nAnswer the following multiple choice question. "
+        "The last line of your response should be of the following format: "
+        "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. "
+        "Think step by step before answering.\n\n"
+        "{input} /no_think<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n\n</think>\n"
+    ),
 }
 
 
