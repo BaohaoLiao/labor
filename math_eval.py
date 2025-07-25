@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument("--max_num_seqs", type=int, default=32)
     parser.add_argument('--enable_prefix_caching', action='store_true', default=False)
     parser.add_argument('--disable_chunked_prefill', action='store_true', default=False)
-    parser.add_argument('--max_model_len', type=int, default=64000)
+    parser.add_argument('--max_model_len', type=int, default=40000)
     parser.add_argument("--n_sampling", type=int, default=1)
 
     args = parser.parse_args()
