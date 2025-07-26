@@ -42,6 +42,11 @@ PROMPT_TEMPLATES = {
         "{input} /no_think<|im_end|>\n"
         "<|im_start|>assistant\n<think>\n\n</think>\n"
     ),
+    "qwen2-5": (
+        "<|im_start|>system\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
+        "<|im_start|>user\n{input}<|im_end|>\n"
+        "<|im_start|>assistant\n"
+    ),
 }
 
 
