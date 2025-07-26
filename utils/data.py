@@ -59,6 +59,14 @@ PROMPT_TEMPLATES = {
         "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|eot_id|>"
         "<|start_header_id|>user<|end_header_id|>\n\n{input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     ),
+    "llama3-1-choice": (
+        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+        "Answer the following multiple choice question. "
+        "The last line of your response should be of the following format: "
+        "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. "
+        "Think step by step before answering.<|eot_id|>"
+        "<|start_header_id|>user<|end_header_id|>\n\n{input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    ),
 }
 
 
