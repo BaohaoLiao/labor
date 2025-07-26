@@ -47,6 +47,10 @@ PROMPT_TEMPLATES = {
         "<|im_start|>user\n{input}<|im_end|>\n"
         "<|im_start|>assistant\n"
     ),
+    "llama3-1": (
+        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|eot_id|>"
+        "<|start_header_id|>user<|end_header_id|>\n\n{input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+    ),
 }
 
 
