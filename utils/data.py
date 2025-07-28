@@ -67,6 +67,11 @@ PROMPT_TEMPLATES = {
         "Think step by step before answering.<|eot_id|>"
         "<|start_header_id|>user<|end_header_id|>\n\n{input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     ),
+    "openreasoning": (
+        "<|im_start|>system\n<|im_end|>\n"
+        "<|im_start|>user\nSolve the following math problem. Make sure to put the answer (and only answer) inside \\boxed{}.\n\n{input}<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n"
+    ),
 }
 
 
