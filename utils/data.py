@@ -72,6 +72,12 @@ PROMPT_TEMPLATES = {
         "<|im_start|>user\nSolve the following math problem. Make sure to put the answer (and only answer) inside \\boxed{{}}.\n\n{input}<|im_end|>\n"
         "<|im_start|>assistant\n<think>\n"
     ),
+    "openreasoning-choice": (
+        "<|im_start|>system\n<|im_end|>\n"
+        "<|im_start|>user\nAnswer the following multiple choice question. The last line of your response should be in the following format: "
+        "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. (e.g. 'ANSWER: A').\n\n{input}<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n"
+    ),
 }
 
 
