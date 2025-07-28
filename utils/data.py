@@ -69,7 +69,7 @@ PROMPT_TEMPLATES = {
     ),
     "openreasoning": (
         "<|im_start|>system\n<|im_end|>\n"
-        "<|im_start|>user\nSolve the following math problem. Make sure to put the answer (and only answer) inside \\boxed{}.\n\n{input}<|im_end|>\n"
+        "<|im_start|>user\nSolve the following math problem. Make sure to put the answer (and only answer) inside \\boxed{{}}.\n\n{input}<|im_end|>\n"
         "<|im_start|>assistant\n<think>\n"
     ),
 }
