@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument("--max_num_seqs", type=int, default=32)
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--first_reasoning_end_idx", type=int, default=512)
+    parser.add_argument("--phrase", action="store_true", default=False)
     parser.add_argument("--is_orm", action="store_true", default=False)
     args = parser.parse_args()
     return args
@@ -53,7 +54,7 @@ def prepare_data(args):
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
         output_dir = f"outputs/{output_dir}"
-    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_rm{model_name}_firstend{args.first_reasoning_end_idx}.json"
+    out_file = f"{output_dir}/{args.data_name}/{out_file_prefix}_rm{model_name}_firstend{args.first_reasoning_end_idx}_phrase{args.phrase}.json"
     os.makedirs(f"{output_dir}/{args.data_name}", exist_ok=True)
     return examples, out_file
 
@@ -123,9 +124,13 @@ def main(args, llm, tokenizer, proxy_tokenizer):
     for i, sample in enumerate(samples):
         sample_tok_messages = []
         for j, model_output in enumerate(sample["model_output"]):
-            first_reasoning = proxy_tokenizer.decode(
-                proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
-            ).strip()
+            if args.phrase:  # Using "Alternatively" as a definition for first step
+                first_reasoning = model_output.split("Alternatively")[0]
+                if len(proxy_tokenizer.encode(first_reasoning)) > 4096:  # Fallback to the first reasoning end index
+                    first_reasoning = proxy_tokenizer.decode(
+                        proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
+                    ).strip()
+
             first_reasoning = "\n\n".join(first_reasoning.split("\n\n")[:-1])
             messages = create_messages(sample["question"], first_reasoning, is_orm=args.is_orm)
             sample_tok_messages.append(
