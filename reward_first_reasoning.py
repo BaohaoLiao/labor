@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import random
 import argparse
 import numpy as np
@@ -61,6 +62,7 @@ def prepare_data(args):
 
 def setup(args):
     # load model
+    start = time.time()
     available_gpus = os.environ["CUDA_VISIBLE_DEVICES"].split(",")
     llm = LLM(
         model=args.model_name_or_path,
@@ -73,6 +75,8 @@ def setup(args):
     )
     tokenizer = llm.get_tokenizer()
     proxy_tokenizer = transformers.AutoTokenizer.from_pretrained(args.proxy_model_name_or_path)
+
+    print(f"Loading model: {time.time() - start}")
 
     # Reward
     main(args, llm, tokenizer, proxy_tokenizer)
@@ -119,6 +123,8 @@ def main(args, llm, tokenizer, proxy_tokenizer):
         }
         samples.append(sample)
 
+    start = time.time()
+
     # Reward the think_summary, i.e. everything after </think>
     n_sampling = len(samples[0]["model_output"])
     for i, sample in enumerate(samples):
@@ -157,6 +163,9 @@ def main(args, llm, tokenizer, proxy_tokenizer):
 
         sample["first_reasoning_reward"] = sample_rewards
   
+    print(f"Encoding time: {time.time() - start} seconds")
+
+
     print(f"Saving first reasoning rewards for {args.data_name} to {out_file}")
     json.dump(samples, open(out_file, "w",), indent=4)
 
