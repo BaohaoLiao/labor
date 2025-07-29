@@ -184,7 +184,7 @@ def main(llm, data_name, args):
     # Extract pred and eval
     results = []
     avg_acc = []
-    for i, sample in enumerate(samples):
+    for i, (sample, output) in enumerate(zip(samples, outputs)):
         gt = parse_ground_truth(sample, data_name)
         preds = []
         scores = []
