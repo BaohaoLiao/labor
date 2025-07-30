@@ -25,6 +25,7 @@ def parse_args():
     parser.add_argument("--input_file", type=str, default=None)
     parser.add_argument("--first_reasoning_end_idx", type=int, default=512)
     parser.add_argument("--phrase", action="store_true", default=False)
+    parser.add_argument("--num_steps", type=int, default=1)
     parser.add_argument("--is_orm", action="store_true", default=False)
     args = parser.parse_args()
     return args
@@ -131,7 +132,12 @@ def main(args, llm, tokenizer, proxy_tokenizer):
         sample_tok_messages = []
         for j, model_output in enumerate(sample["model_output"]):
             if args.phrase:  # Using "Alternatively" as a definition for first step
-                first_reasoning = model_output.split("Alternatively")[0]
+                reasoning_steps = model_output.split("Alternatively")
+                if len(reasoning_steps) >= args.num_steps:
+                    first_reasoning = "Alternatively".join(reasoning_steps[:args.num_steps])
+                else:
+                    first_reasoning = "Alternatively".join(reasoning_steps)
+
                 if len(proxy_tokenizer.encode(first_reasoning)) > 4096:  # Fallback to the first reasoning end index
                     first_reasoning = proxy_tokenizer.decode(
                         proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
