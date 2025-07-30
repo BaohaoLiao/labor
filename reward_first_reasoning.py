@@ -138,7 +138,7 @@ def main(args, llm, tokenizer, proxy_tokenizer):
                 else:
                     first_reasoning = "Alternatively".join(reasoning_steps)
 
-                if len(proxy_tokenizer.encode(first_reasoning)) > 4096:  # Fallback to the first reasoning end index
+                if len(proxy_tokenizer.encode(first_reasoning)) > 3072:  # Fallback to the first reasoning end index
                     first_reasoning = proxy_tokenizer.decode(
                         proxy_tokenizer.encode(model_output)[1:args.first_reasoning_end_idx]
                     ).strip()
