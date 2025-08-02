@@ -102,7 +102,7 @@ def main(llm, data_name, args):
                 "prompt": construct_prompt(example, args) + output.split("Alternatively,")[0].strip() + "\n</think>",
                 "full_trace_score": example["score"][i],
                 "full_trace": output,
-                "gt": example["gt"],
+                "answer": example["gt"],
             })
 
     # start inference
