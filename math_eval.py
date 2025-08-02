@@ -85,6 +85,7 @@ def setup(args):
         enable_chunked_prefill=not args.disable_chunked_prefill,
         max_model_len=args.max_model_len,
         seed=args.seed,
+        gpu_memory_utilization=0.85,
     )
 
     # infer & eval
