@@ -62,7 +62,10 @@ def prepare_data(data_name, args):
         examples = examples[: args.num_test_sample]
 
     # get out_file name
-    out_file = args.input_file.replace(".json", "_3.3.josn")
+    out_file = (
+        f"/data/chatgpt/data/baliao/latb/03_rebuttal/labor/outputs/{args.output_dir}/aime25/"
+        f"{args.prompt_type}_seed0_t1.0topp0.9minp0.05_len16384_num-1_n32_3.3.json"
+    )
     return examples, out_file
 
 
