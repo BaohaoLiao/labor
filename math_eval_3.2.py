@@ -33,6 +33,8 @@ def parse_args():
     parser.add_argument('--max_model_len', type=int, default=40000)
     parser.add_argument("--n_sampling", type=int, default=1)
     parser.add_argument("--input_file", type=str)
+    parser.add_argument("--phrase", type=str, default="Alternatively,")
+
 
     args = parser.parse_args()
     # top_p must be 1 when using greedy sampling (vllm)
@@ -100,7 +102,7 @@ def main(llm, data_name, args):
 
             samples.append({
                 "question": example["question"],
-                "prompt": construct_prompt(example, args) + output.split("Alternatively,")[0].strip() + "\n</think>",
+                "prompt": construct_prompt(example, args) + output.split(args.phrase)[0].strip() + "\n</think>",
                 "full_trace_score": example["score"][i],
                 "full_trace": output,
                 "answer": example["gt"],
