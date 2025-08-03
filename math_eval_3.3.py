@@ -95,7 +95,7 @@ def main(llm, data_name, args):
     for i, example in tqdm(enumerate(examples), total=len(examples)):
         samples.append({
             "question": example["question"],
-            "prompt": construct_prompt(example, args) + example["first_reasoning"] + "\nAlternatively,",
+            "prompt": construct_prompt(example, args) + example["first_reasoning"] + "\n" + args.phrase,
             "answer": example["gt"],
         })
 
