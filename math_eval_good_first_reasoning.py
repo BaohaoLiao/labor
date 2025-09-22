@@ -158,7 +158,7 @@ def select_better_first_reasoning(rm, rm_tokenizer, question, reasonings, reward
             reward = step_reward[-1]
         elif args.reward_operation == "min":
             reward = np.min(step_reward)
-        else
+        else:
             reward = np.prod(step_reward)
         rewards.append(reward)
 
@@ -192,8 +192,8 @@ def main(args, llm, tokenizer, rm, rm_tokenizer):
             first_reasonings = [
                 tokenizer.decode(
                     tokenizer.encode(o)[1:arg.start_token_idx]
-                ) 
-            ] for o in baseline_result["model_output"]]
+                ) for o in baseline_result["model_output"]
+            ]
 
         # Select better first reasonings
         rewards, selected_first_reasonings = select_better_first_reasoning(

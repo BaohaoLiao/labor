@@ -162,7 +162,7 @@ def evaluation(llm, data_name, args):
 
     # Extract pred and eval
     if "gpt-oss" in args.model_name_or_path:
-        thinking_tag = "assistantfinal"
+        thinking_tag = "<|end|><|start|>assistant<|channel|>final<|message|>"
     else:
         thinking_tag = "</think>"
     results = []

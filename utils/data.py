@@ -78,21 +78,21 @@ PROMPT_TEMPLATES = {
         "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. (e.g. 'ANSWER: A').\n\n{input}<|im_end|>\n<|im_start|>assistant\n<think>\n"
     ),
     "gptoss": (
-        "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-09-22\n"
-        "\nReasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\n"
+        "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\n\n"
+        "Reasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\n"
         "Calls to these tools must go to the commentary channel: 'functions'.<|end|>"
         "<|start|>developer<|message|># Instructions\n\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|end|>"
-        "<|start|>user<|message|>\n{input}\n<|end|><|start|>assistantanalysis"
+        "<|start|>user<|message|>\n{input}\n<|end|><|start|>assistant<|channel|>analysis<|message|>"
     ),
     "gptoss-choice": (
-        "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-09-22\n"
-        "\nReasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\n"
+        "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\n\n"
+        "Reasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\n"
         "Calls to these tools must go to the commentary channel: 'functions'.<|end|>"
         "<|start|>developer<|message|># Instructions\n\nAnswer the following multiple choice question. "
         "The last line of your response should be of the following format: "
         "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. "
         "Think step by step before answering.<|end|>"
-        "<|start|>user<|message|>\n{input}\n<|end|><|start|>assistantanalysis"
+        "<|start|>user<|message|>\n{input}\n<|end|><|start|>assistant<|channel|>analysis<|message|>"
     )
 }
 
