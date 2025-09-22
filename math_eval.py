@@ -143,9 +143,19 @@ def evaluation(llm, data_name, args):
     # start inference
     prompts = [sample["prompt"] for sample in samples]
     start_time = time.time()
-    outputs = llm.generate(
-        prompts,
-        SamplingParams(
+
+    if "magistral" in args.model_name_or_path.lower():
+        sampling_params = SamplingParams(
+            temperature=args.temperature,
+            top_p=args.top_p,
+            min_p=args.min_p,
+            top_k=args.top_k,
+            max_tokens=args.max_tokens_per_call,
+            n=args.n_sampling,
+            seed=args.seed,
+        )
+    else:
+        sampling_params = SamplingParams(
             temperature=args.temperature,
             top_p=args.top_p,
             min_p=args.min_p,
@@ -154,7 +164,11 @@ def evaluation(llm, data_name, args):
             n=args.n_sampling,
             skip_special_tokens=False,
             seed=args.seed,
-        ),
+        )
+
+    outputs = llm.generate(
+        prompts,
+        sampling_params,
     )
     outputs = sorted(outputs, key=lambda x: int(x.request_id))
     assert len(outputs) == len(prompts)
@@ -163,6 +177,8 @@ def evaluation(llm, data_name, args):
     # Extract pred and eval
     if "gpt-oss" in args.model_name_or_path:
         thinking_tag = "<|end|><|start|>assistant<|channel|>final<|message|>"
+    elif "magistral" in args.model_name_or_path.lower():
+        thinking_tag = "[/THINK]"
     else:
         thinking_tag = "</think>"
     results = []

@@ -93,6 +93,23 @@ PROMPT_TEMPLATES = {
         "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. "
         "Think step by step before answering.<|end|>"
         "<|start|>user<|message|>\n{input}\n<|end|><|start|>assistant<|channel|>analysis<|message|>"
+    ),
+    "magistral": (
+        "<s>[SYSTEM_PROMPT]First draft your thinking process (inner monologue) until you arrive at a response. Format your response using Markdown, "
+        "and use LaTeX for any mathematical equations. Write both your thoughts and the response in the same language as the input.\n\n"
+        "Your thinking process must follow the template below:[THINK]Your thoughts or/and draft, like working through an exercise on scratch paper. "
+        "Be as casual and as long as you want until you are confident to generate the response. Use the same language as the input."
+        "[/THINK]Here, provide a self-contained response.[/SYSTEM_PROMPT]"
+        "[INST]Please reason step by step, and put your final answer within \\boxed{{}}.\n\n{input}[/INST] [THINK]"
+    ),
+    "magistral-choice":(
+        "<s>[SYSTEM_PROMPT]First draft your thinking process (inner monologue) until you arrive at a response. Format your response using Markdown, "
+        "and use LaTeX for any mathematical equations. Write both your thoughts and the response in the same language as the input.\n\n"
+        "Your thinking process must follow the template below:[THINK]Your thoughts or/and draft, like working through an exercise on scratch paper. "
+        "Be as casual and as long as you want until you are confident to generate the response. Use the same language as the input."
+        "[/THINK]Here, provide a self-contained response.[/SYSTEM_PROMPT]"
+        "[INST]Answer the following multiple choice question. The last line of your response should be in the following format: "
+        "'ANSWER: $LETTER' (without quotes) where LETTER is one of ABCD. (e.g. 'ANSWER: A').\n\n{input}[/INST] [THINK]"
     )
 }
 
