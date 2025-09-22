@@ -72,7 +72,7 @@ def prepare_data(data_name, args):
     return examples, out_file
 
 
-def setup(args):
+def main(args):
     # load model
     available_gpus = os.environ["CUDA_VISIBLE_DEVICES"].split(",")
     llm = LLM(
@@ -216,4 +216,4 @@ if __name__ == "__main__":
     print()
 
     set_seed(args.seed)
-    setup(args)
+    main(args)
