@@ -91,10 +91,10 @@ def main(args):
     # infer & eval
     data_list = args.data_names.split(",")
     for data_name in data_list:
-        main(llm, data_name, args)
+        evaluation(llm, data_name, args)
 
 
-def main(llm, data_name, args):
+def evaluation(llm, data_name, args):
     examples, out_file = prepare_data(data_name, args)
     print("=" * 50)
     print("data:", data_name, " , #samples:", len(examples))
