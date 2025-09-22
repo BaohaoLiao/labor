@@ -161,6 +161,10 @@ def main(llm, data_name, args):
     end_time = time.time()
 
     # Extract pred and eval
+    if "gpt-oss" in args.model_name_or_path:
+        thinking_tag = "assistantfinal"
+    else:
+        thinking_tag = "</think>"
     results = []
     avg_acc = []
     for sample, output in zip(samples, outputs):
@@ -170,8 +174,8 @@ def main(llm, data_name, args):
         scores = []
         for o in output.outputs:
             # Avoid the bug in math_verify for multiple boxeds
-            if "</think>" in o.text:
-                model_output = o.text.split("</think>")[-1]
+            if thinking_tag in o.text:
+                model_output = o.text.split(thinking_tag)[-1]
             else:
                 model_output = o.text
             pred, score = extract_and_verify_pred(model_output, gt, data_name)
