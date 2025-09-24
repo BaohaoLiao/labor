@@ -10,7 +10,7 @@ from vllm import LLM, SamplingParams
 import datasets
 
 from utils.data import construct_prompt
-import lcb_runner
+from lcb_runner.benchmarks.code_generation import CodeGenerationProblem
 
 
 def parse_args():
@@ -58,7 +58,7 @@ def prepare_data(data_name, args):
         new_p = {}
         for k, v in p.items():
             new_p[k] = str(v)
-        examples.append(lcb_runner.benchmarks.code_generation.CodeGenerationProblem(**new_p))
+        examples.append(CodeGenerationProblem(**new_p))
     examples = sorted(examples, key=lambda x: x.question_id)
 
     # sample `num_test_sample` from dataset for debug purpose
