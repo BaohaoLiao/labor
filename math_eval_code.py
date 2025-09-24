@@ -254,7 +254,7 @@ def evaluation(llm, data_name, args):
     graded = extract_instance_results(metrics[1])
 
     for result, g in zip(results, graded):
-        result["score"] = g["scores"]
+        result["score"] = g
     
     print(f"Saving model outputs for {data_name} to {out_file}")
     json.dump(results, open(out_file, "w",), indent=4)
