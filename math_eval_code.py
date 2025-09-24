@@ -11,6 +11,8 @@ import datasets
 
 from utils.data import construct_prompt
 from lcb_runner.benchmarks.code_generation import CodeGenerationProblem
+from lcb_runner.evaluation import codegen_metrics
+from lcb_runner.evaluation import extract_instance_results
 
 
 def parse_args():
@@ -127,6 +129,39 @@ def get_question_template(question):
         prompt += f"```python\n# YOUR CODE HERE\n```"
     return prompt
 
+def extract_test_output_code(model_output: str):
+    outputlines = model_output.split("\n")
+    indexlines = [
+        i
+        for i, line in enumerate(outputlines)
+        if "```python" in line or "```Python" in line
+    ]
+    if indexlines:
+        start_index = indexlines[0]
+    else:
+        start_index = None
+    indexlines = [i for i, line in enumerate(outputlines) if "```" in line]
+    if start_index is not None:
+        indexlines = [i for i in indexlines if i > start_index]
+        indexlines = [start_index] + indexlines
+    
+    if len(indexlines) < 2:
+        return  ""
+    return "\n".join(outputlines[indexlines[0] + 1 : indexlines[1]])
+
+def get_metrics(
+    benchmark,
+    generations,
+):
+    eval_samples = [instance.get_evaluation_sample() for instance in benchmark]
+    metrics = codegen_metrics(
+        eval_samples,
+        generations,
+        num_process_evaluate=12,
+        timeout=6,
+    )
+    print(metrics[0]["pass@1"])
+    return metrics
 
 def evaluation(llm, data_name, args):
     examples, out_file = prepare_data(data_name, args)
@@ -149,7 +184,7 @@ def evaluation(llm, data_name, args):
             "question": question,
             "prompt": full_prompt,
         }
-        
+
         samples.append(sample)
 
     # start inference
@@ -197,6 +232,30 @@ def evaluation(llm, data_name, args):
         )
 
     time_use = (end_time - start_time) / 60
+
+    # score
+    if "gpt-oss" in args.model_name_or_path:
+        thinking_tag = "<|end|><|start|>assistant<|channel|>final<|message|>"
+    elif "magistral" in args.model_name_or_path.lower():
+        thinking_tag = "[/THINK]"
+    else:
+        thinking_tag = "</think>"
+
+    extracted_codes = []
+    for result in results:
+        codes = []
+        for model_output in result["model_output"]:
+            if thinking_tag in model_output:
+                model_output = model_output.split(thinking_tag)[-1]
+            code = extract_test_output_code(model_output)
+            codes.append(code)
+        extracted_codes.append(codes)
+    metrics = get_metrics(examples, extracted_codes)
+    graded = extract_instance_results(metrics[1])
+
+    for result, g in zip(results, graded):
+        result["score"] = g["scores"]
+    
     print(f"Saving model outputs for {data_name} to {out_file}")
     json.dump(results, open(out_file, "w",), indent=4)
 
