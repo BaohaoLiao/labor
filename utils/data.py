@@ -29,6 +29,11 @@ PROMPT_TEMPLATES = {
         "{input}<|im_end|>\n"
         "<|im_start|>assistant\n<think>\n"
     ),
+    "qwen3-think-code": (
+        "<|im_start|>system\nPlease reason step by step.<|im_end|>\n"
+        "<|im_start|>user\n{input}<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n"
+    ),
     "qwen3-no-think": (
         "<|im_start|>system\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
         "<|im_start|>user\n{input} /no_think<|im_end|>\n"
