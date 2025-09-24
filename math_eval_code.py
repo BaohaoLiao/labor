@@ -138,17 +138,15 @@ def evaluation(llm, data_name, args):
         idx = i
 
         # parse question and answer
-        example["question"] = get_question_template(example)
-        if example["question"] == "":
-            continue
-        full_prompt = construct_prompt(example, args)
+        question = get_question_template(example)
+        full_prompt = construct_prompt({"question": question}, args)
 
         if i == 0:
             print(full_prompt)
 
         sample = {
             "idx": idx,
-            "question": example["question"],
+            "question": question,
             "prompt": full_prompt,
         }
 
