@@ -149,26 +149,7 @@ def evaluation(llm, data_name, args):
             "question": question,
             "prompt": full_prompt,
         }
-
-        # add remain fields
-        for key in [
-            "level",
-            "type",
-            "unit",
-            "solution_type",
-            "choices",
-            "solution",
-            "ques_type",
-            "ans_type",
-            "answer_type",
-            "dataset",
-            "subfield",
-            "filed",
-            "theorem",
-            "answer",
-        ]:
-            if key in example:
-                sample[key] = example[key]
+        
         samples.append(sample)
 
     # start inference
